@@ -408,13 +408,10 @@ esp_err_t sgtl5000_playback_init( void )
 
     // Read chip ID
     err = sgtl5000_read_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ID, &val );
-
-
     ESP_LOGI( ID, "Chip ID: %d", val );
-    if( err ){ ESP_LOGI( ID, "Chip ID Error - Code: %d", err ); }
+    if( err ){ ESP_LOGE( ID, "Chip ID Error - Code: %d", err ); }
 
-    // Digital power control
-    // Enable I2S data in and DAC
+    // Digital power control - Enable I2S data in and DAC
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0021);
     if( err ){ ESP_LOGE( ID, "I2S/DAC Power Up Error - Code: %d", err ); }
 
