@@ -43,14 +43,14 @@ void audio_task( void *pvParameter )
     uint16_t bytes;
 
     // oscillator values
-       float hertz = 1000;
-       float phase = 0;
-       float phase_inc = hertz * ( 1.0 / (float)SGTL5000_SAMPLERATE );
+    float hertz = 1000;
+    float phase = 0;
+    float phase_inc = hertz * ( 1.0 / (float)SGTL5000_SAMPLERATE );
 
-   // audio task loop
+    // audio task loop
     while( 1 )
     {
-        // iterate through the signal frame 
+        // iterate through the signal frame
         for( i = 0 ; i < 128 ; i++ )
         {
             // increment and wrap phase
@@ -77,7 +77,7 @@ void app_main()
     ets_delay_us( 300000 );
 
     // initialize sgtl5000 i2s interface
-    sgtl5000_i2s_init ();
+    sgtl5000_i2s_init();
 
     // let the mclk flow
     ets_delay_us( 1000 );

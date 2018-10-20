@@ -14,7 +14,10 @@
 #include "sgtl5000.h"
 #include "soc/rtc.h"
 #include "soc/soc.h"
+#include "esp_log.h"
 
+// id for esp_log functions
+static const char *ID = "SGTL5000";
 
 //------------------------------------------------------------------------------
 // i2s_config_t - i2s configuration structure
@@ -405,64 +408,66 @@ esp_err_t sgtl5000_playback_init( void )
 
     // Read chip ID
     err = sgtl5000_read_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ID, &val );
-    printf( "SGTL5000 - ID: %d\n", val );
-    if( err ){ printf( "SGTL5000 - Chip ID Error - Code: %d\n", err ); }
+
+
+    ESP_LOGI( ID, "Chip ID: %d", val );
+    if( err ){ ESP_LOGI( ID, "Chip ID Error - Code: %d", err ); }
 
     // Digital power control
     // Enable I2S data in and DAC
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0021);
-    if( err ){ printf( "SGTL5000 - I2S/DAC Power Up Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "I2S/DAC Power Up Error - Code: %d", err ); }
 
     // 48kHz sample rate, with CLKM = 256*Fs = 12.288000 MHz
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_CLK_CTRL, 0x0008);
-    if( err ){ printf( "SGTL5000 - Sample Rate Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Sample Rate Error - Code: %d", err ); }
 
     // I2S mode = , LRALIGN = 0, LRPOL = 0
     // 32*Fs is SCLK rate, 16 bits/sample, I2S is slave, no PLL used
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_I2S_CTRL, 0x0130 );
-    if( err ){ printf( "SGTL5000 - I2S Configuration Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "I2S Configuration Error - Code: %d", err ); }
 
     // I2S in -> DAC output, rest left at default
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_SSS_CTRL, 0x0010 );
-    if( err ){ printf( "SGTL5000 - I2S to DAC Connection Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "I2S to DAC Connection Error - Code: %d", err ); }
 
     // Unmute DAC, no volume ramp enabled
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ADCDAC_CTRL, 0x0000 );
-    if( err ){ printf( "SGTL5000 - DAC Unmute Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "DAC Unmute Error - Code: %d", err ); }
 
     // DAC volume is 0dB for both channels
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DAC_VOL, 0x3C3C );
-    if( err ){ printf( "SGTL5000 - DAC Volume Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "DAC Volume Error - Code: %d", err ); }
 
     // Moderate drive strength (4mA) for all pads
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_PAD_STRENGTH, 0x02AA );
-    if( err ){ printf( "SGTL5000 - Drive Strength Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Drive Strength Error - Code: %d", err ); }
 
     // 0dB headphone volume
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_HP_CTRL, 0x3C3C );
-    if( err ){ printf( "SGTL5000 - Headphone Volume Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Headphone Volume Error - Code: %d", err ); }
 
     // Unmute HP, ZCD disabled, rest mute
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0101 );
-    if( err ){ printf( "SGTL5000 - Headphone Unmute Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Headphone Unmute Error - Code: %d", err ); }
 
     // VAG_VAL = 0.8V + 100mV = 0.9V
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_REF_CTRL, 0x0040 );
-    if( err ){ printf( "SGTL5000 - Analog Voltage Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Analog Voltage Error - Code: %d", err ); }
 
     // Capless HP and DAC on
     // Stereo DAC with external VDDD source
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_POWER, 0x40FC );
-    if( err ){ printf( "SGTL5000 - Analog Power Error - Code: %d\n", err ); }
+    if( err ){ ESP_LOGE( ID, "Analog Power Error - Code: %d", err ); }
 
     if( err == 0 )
     {
-        printf( "SGTL5000 - Initialization Complete" );
+        ESP_LOGI( ID, "Initialization Complete" );
         return ESP_OK;
     }
     else
     {
-        printf( "SGTL5000 - Initialization Error" );
+        ESP_LOGE( ID, "Initialization Error" );
         return ESP_FAIL;
     }
 }
