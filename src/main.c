@@ -86,7 +86,7 @@ void app_main()
     sgtl5000_i2c_init ();
 
     // initialize sgtl5000 for audio
-    sgtl5000_init();
+    sgtl5000_audio_init();
 
     // create a task to fill dma buffers with audio
     xTaskCreate( &audio_task, "audio_task", 4096, NULL, 8, NULL );

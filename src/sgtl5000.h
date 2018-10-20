@@ -155,7 +155,7 @@ esp_err_t       sgtl5000_check_module           ( void );
 
 void            sgtl5000_i2c_init               ( void );
 void            sgtl5000_i2s_init               ( void );
-esp_err_t       sgtl5000_init                   ( void );
+esp_err_t       sgtl5000_audio_init             ( void );
 
 
 #ifdef __cplusplus

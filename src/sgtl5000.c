@@ -398,9 +398,9 @@ esp_err_t sgtl5000_pin_drive_strength( uint8_t i2c_strength, uint8_t i2s_strengt
 
 
 //------------------------------------------------------------------------------
-// sgtl5000_playback_init - initialize the chip for basic playback
+// sgtl5000_audio_init - initialize the chip for audio
 //------------------------------------------------------------------------------
-esp_err_t sgtl5000_playback_init( void )
+esp_err_t sgtl5000_audio_init( void )
 {
     uint8_t  err;
     uint16_t val;
