@@ -16,12 +16,14 @@
 #include "soc/soc.h"
 #include "esp_log.h"
 
+//------------------------------------------------------------------------------
+// variables
+//------------------------------------------------------------------------------
+
 // id for esp_log functions
 static const char *ID = "SGTL5000";
 
-//------------------------------------------------------------------------------
-// i2s_config_t - i2s configuration structure
-//------------------------------------------------------------------------------
+// i2s configuration structure
 static i2s_config_t sgtl5000_i2s_config =
 {
     .mode                   = I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_RX,      // master tx rx
@@ -34,10 +36,7 @@ static i2s_config_t sgtl5000_i2s_config =
     .intr_alloc_flags       = ESP_INTR_FLAG_LEVEL1                              // interrupt level 1
 };
 
-
-//------------------------------------------------------------------------------
 // i2s_pin_config_t - i2s pinconfiguration structure
-//------------------------------------------------------------------------------
 static i2s_pin_config_t sgtl5000_pin_config =
 {
     .bck_io_num             = SGTL5000_BCK,
