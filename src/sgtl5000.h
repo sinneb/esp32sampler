@@ -151,11 +151,11 @@ esp_err_t       sgtl5000_set_ref                ( uint16_t vag_voltage );
 
 esp_err_t       sgtl5000_unmute_headphone       ( void );
 esp_err_t       sgtl5000_mute_headphone         ( void );
-esp_err_t       sgtl5000_playback_init          ( void );
 esp_err_t       sgtl5000_check_module           ( void );
 
-void            sgtl5000_i2c_init               ();
-void            sgtl5000_i2s_init               ();
+void            sgtl5000_i2c_init               ( void );
+void            sgtl5000_i2s_init               ( void );
+esp_err_t       sgtl5000_init                   ( void );
 
 
 #ifdef __cplusplus

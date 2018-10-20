@@ -85,10 +85,10 @@ void app_main()
     // initialize sgtl5000 i2c interface
     sgtl5000_i2c_init ();
 
-    // initialize sgtl5000 for playback
-    sgtl5000_playback_init();
+    // initialize sgtl5000 for audio
+    sgtl5000_init();
 
-    // create a task to load audio into dma buffers
+    // create a task to fill dma buffers with audio
     xTaskCreate( &audio_task, "audio_task", 4096, NULL, 8, NULL );
 }
 
