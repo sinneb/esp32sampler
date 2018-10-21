@@ -404,7 +404,7 @@ esp_err_t sgtl5000_pin_drive_strength( uint8_t i2c_strength, uint8_t i2s_strengt
 
 
 //------------------------------------------------------------------------------
-// sgtl5000_audio_init - initialize the chip for audio
+// sgtl5000_audio_init - initialize the chip for 16 Bit 48 kHz audio
 //------------------------------------------------------------------------------
 esp_err_t sgtl5000_audio_init( void )
 {
@@ -417,10 +417,11 @@ esp_err_t sgtl5000_audio_init( void )
     if( err ){ ESP_LOGE( ID, "Chip ID Error - Code: %d", err ); }
 
     // Digital power control - Enable I2S data in and DAC
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0021);
-    if( err ){ ESP_LOGE( ID, "I2S/DAC Power Up Error - Code: %d", err ); }
+    // power up adc dac dap i2s_out i2s_in                               001110011
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0073);
+    if( err ){ ESP_LOGE( ID, "I2S/DIG/DAC Power Up Error - Code: %d", err ); }
 
-    // 48kHz sample rate, with CLKM = 256*Fs = 12.288000 MHz
+    // 48kHz sample rate, with MCLK = 256*Fs = 12.288000 MHz  ( 96kHz = 0x000C )
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_CLK_CTRL, 0x0008);
     if( err ){ ESP_LOGE( ID, "Sample Rate Error - Code: %d", err ); }
 
@@ -449,9 +450,9 @@ esp_err_t sgtl5000_audio_init( void )
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_HP_CTRL, 0x3C3C );
     if( err ){ ESP_LOGE( ID, "Headphone Volume Error - Code: %d", err ); }
 
-    // Unmute HP, ZCD disabled, rest mute
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0101 );
-    if( err ){ ESP_LOGE( ID, "Headphone Unmute Error - Code: %d", err ); }
+    // adc input to line in 00000100
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0004 );
+    if( err ){ ESP_LOGE( ID, "Connect ADC to Line In Error - Code: %d", err ); }
 
     // VAG_VAL = 0.8V + 100mV = 0.9V
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_REF_CTRL, 0x0040 );
@@ -459,7 +460,7 @@ esp_err_t sgtl5000_audio_init( void )
 
     // Capless HP and DAC on
     // Stereo DAC with external VDDD source
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_POWER, 0x40FC );
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_POWER, 0x40FF );
     if( err ){ ESP_LOGE( ID, "Analog Power Error - Code: %d", err ); }
 
     if( err == 0 )
