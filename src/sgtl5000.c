@@ -19,6 +19,7 @@ extern "C" {
 #include "sgtl5000.h"
 #include "soc/rtc.h"
 #include "soc/soc.h"
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 
@@ -39,7 +40,8 @@ static i2s_config_t sgtl5000_i2s_config =
     .communication_format   = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,    // communication format
     .dma_buf_count          = DMA_BUFFER_COUNT,                                 // number of dma buffers
     .dma_buf_len            = DMA_BUFFER_LENGTH,                                // size of dma buffer in bytes
-    .intr_alloc_flags       = ESP_INTR_FLAG_LEVEL1                              // interrupt level 1
+    .intr_alloc_flags       = ESP_INTR_FLAG_LEVEL1,                              // interrupt level 1
+    .use_apll               = true
 };
 
 // i2s_pin_config_t - i2s pinconfiguration structure
@@ -411,57 +413,91 @@ esp_err_t sgtl5000_audio_init( void )
     uint8_t  err;
     uint16_t val;
 
-    // Read chip ID
+    //     // Read chip ID
     err = sgtl5000_read_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ID, &val );
-    ESP_LOGI( ID, "Chip ID: %d", val );
-    if( err ){ ESP_LOGE( ID, "Chip ID Error - Code: %d", err ); }
+    ESP_LOGE( ID, "Chip ID: %d", val );
+    // if( err ){ ESP_LOGE( ID, "Chip ID Error - Code: %d", err ); }
 
-    // Digital power control - Enable I2S data in and DAC
-    // power up adc dac dap i2s_out i2s_in                               001110011
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0073);
-    if( err ){ ESP_LOGE( ID, "I2S/DIG/DAC Power Up Error - Code: %d", err ); }
+        // Capless HP and DAC on
+    // Stereo DAC with external VDDD source
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_POWER, 0x4060 );
+    if( err ){ ESP_LOGE( ID, "Analog Power Error - Code: %d", err ); }
 
-    // 48kHz sample rate, with MCLK = 256*Fs = 12.288000 MHz  ( 96kHz = 0x000C )
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_CLK_CTRL, 0x0008);
-    if( err ){ ESP_LOGE( ID, "Sample Rate Error - Code: %d", err ); }
-
-    // I2S mode = , LRALIGN = 0, LRPOL = 0
-    // 32*Fs is SCLK rate, 16 bits/sample, I2S is slave, no PLL used
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_I2S_CTRL, 0x0130 );
-    if( err ){ ESP_LOGE( ID, "I2S Configuration Error - Code: %d", err ); }
-
-    // I2S in -> DAC output, rest left at default
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_SSS_CTRL, 0x0010 );
-    if( err ){ ESP_LOGE( ID, "I2S to DAC Connection Error - Code: %d", err ); }
-
-    // Unmute DAC, no volume ramp enabled
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ADCDAC_CTRL, 0x0000 );
-    if( err ){ ESP_LOGE( ID, "DAC Unmute Error - Code: %d", err ); }
-
-    // DAC volume is 0dB for both channels
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DAC_VOL, 0x3C3C );
-    if( err ){ ESP_LOGE( ID, "DAC Volume Error - Code: %d", err ); }
-
-    // Moderate drive strength (4mA) for all pads
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_PAD_STRENGTH, 0x02AA );
-    if( err ){ ESP_LOGE( ID, "Drive Strength Error - Code: %d", err ); }
-
-    // 0dB headphone volume
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_HP_CTRL, 0x3C3C );
-    if( err ){ ESP_LOGE( ID, "Headphone Volume Error - Code: %d", err ); }
-
-    // adc input to line in 00000100
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0004 );
-    if( err ){ ESP_LOGE( ID, "Connect ADC to Line In Error - Code: %d", err ); }
+    // linreg    
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_LINREG_CTRL, 0x006C );
+    if( err ){ ESP_LOGE( ID, "Analog Power Error - Code: %d", err ); }
 
     // VAG_VAL = 0.8V + 100mV = 0.9V
-    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_REF_CTRL, 0x0040 );
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_LINE_OUT_CTRL, 0x01F2 );
     if( err ){ ESP_LOGE( ID, "Analog Voltage Error - Code: %d", err ); }
 
-    // Capless HP and DAC on
+    // lineout
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_REF_CTRL, 0x0F22 );
+    if( err ){ ESP_LOGE( ID, "Analog Voltage Error - Code: %d", err ); }
+
+    // short
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_SHORT_CTRL, 0x4446 );
+    if( err ){ ESP_LOGE( ID, "Analog Voltage Error - Code: %d", err ); }
+
+    // adc input to line in 00000100
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0137 );
+    if( err ){ ESP_LOGE( ID, "Connect ADC to Line In Error - Code: %d", err ); }
+
     // Stereo DAC with external VDDD source
     err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_POWER, 0x40FF );
     if( err ){ ESP_LOGE( ID, "Analog Power Error - Code: %d", err ); }
+
+   // power up adc dac dap i2s_out i2s_in                               001110011
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DIG_POWER, 0x0073);
+    if( err ){ ESP_LOGE( ID, "I2S/DIG/DAC Power Up Error - Code: %d", err ); }
+
+    ets_delay_us( 400000 );
+
+   // power up adc dac dap i2s_out i2s_in                               001110011
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_LINE_OUT_VOL, 0x1D1D);
+    if( err ){ ESP_LOGE( ID, "I2S/DIG/DAC Power Up Error - Code: %d", err ); }
+    // 48kHz sample rate, with MCLK = 256*Fs = 12.288000 MHz  ( 96kHz = 0x000C )
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_CLK_CTRL, 0x0000);
+    if( err ){ ESP_LOGE( ID, "Sample Rate Error - Code: %d", err ); }
+    // 32*Fs is SCLK rate, 16 bits/sample, I2S is slave, no PLL used
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_I2S_CTRL, 0x0130 );
+    if( err ){ ESP_LOGE( ID, "I2S Configuration Error - Code: %d", err ); }
+    //err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_SSS_CTRL, 0x0010 );
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_SSS_CTRL, 0x0010 );
+    if( err ){ ESP_LOGE( ID, "I2S to DAC Connection Error - Code: %d", err ); }
+    // Digital power control - Enable I2S data in and DAC
+     // Unmute DAC, no volume ramp enabled
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ADCDAC_CTRL, 0x0000 );
+    if( err ){ ESP_LOGE( ID, "DAC Unmute Error - Code: %d", err ); }
+    // DAC volume is 0dB for both channels
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_DAC_VOL, 0x5C5C );
+    if( err ){ ESP_LOGE( ID, "DAC Volume Error - Code: %d", err ); }
+    // 0dB headphone volume
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_HP_CTRL, 0x1818 );
+    if( err ){ ESP_LOGE( ID, "Headphone Volume Error - Code: %d", err ); }
+    // 0dB headphone volume
+    err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_ANA_CTRL, 0x0026 );
+    if( err ){ ESP_LOGE( ID, "Headphone Volume Error - Code: %d", err ); }
+    // I2S mode = , LRALIGN = 0, LRPOL = 0
+
+
+    // I2S in -> DAC output, rest left at default
+
+
+
+
+
+
+    // Moderate drive strength (4mA) for all pads
+    // err = sgtl5000_write_reg( SGTL5000_I2C_NUM, SGTL5000_CHIP_PAD_STRENGTH, 0x02AA );
+    // if( err ){ ESP_LOGE( ID, "Drive Strength Error - Code: %d", err ); }
+
+
+
+
+
+
+
 
     if( err == 0 )
     {
@@ -600,14 +636,32 @@ void sgtl5000_i2c_init()
 //------------------------------------------------------------------------------
 // sgtl5000_i2s_init - initialize i2s bus for this chip
 //------------------------------------------------------------------------------
-void sgtl5000_i2s_init()
+int sgtl5000_i2s_init()
 {
-    i2s_driver_install( I2S_NUM, &sgtl5000_i2s_config, 0 , NULL );
-    i2s_set_pin( I2S_NUM, &sgtl5000_pin_config );
+    esp_err_t err;
+ 
+
+
+    err = i2s_driver_install( I2S_NUM, &sgtl5000_i2s_config, 0 , NULL );
+    // if (err != ESP_OK) {
+    // Serial.printf("Failed installing driver: %d\n", err);
+    // while (true);
+    // }
+
+    err = i2s_set_pin( I2S_NUM, &sgtl5000_pin_config );
+    // if (err != ESP_OK) {
+    // Serial.printf("Failed setting pin: %d\n", err);
+    // while (true);
+    // }
+    // Serial.println("I2S driver installed.");
 
     // Enable MCLK output
+    // MCLK: 12292917.167
     WRITE_PERI_REG( PIN_CTRL, READ_PERI_REG( PIN_CTRL ) & 0xFFFFFFF0 );
     PIN_FUNC_SELECT( PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1 );
+
+//    rtc_clk_apll_enable(1,0,73,7,8);
+    return err;
 }
 
 

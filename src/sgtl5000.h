@@ -97,8 +97,8 @@ extern "C" {
 
 // GPIO pins for I2C
 //------------------------------------------------------------------------------
-#define         SGTL5000_I2C_SCL_IO             22
-#define         SGTL5000_I2C_SDA_IO             21
+#define         SGTL5000_I2C_SCL_IO             19
+#define         SGTL5000_I2C_SDA_IO             5
 #define         SGTL5000_I2C_ADDR               0x0A                // codec slave address
 
 // GPIO pins for I2S
@@ -107,7 +107,7 @@ extern "C" {
 #define         SGTL5000_LRCLK                  25
 #define         SGTL5000_BCK                    26
 #define         SGTL5000_DOUT                   2
-#define         SGTL5000_DIN                    4
+#define         SGTL5000_DIN                    13
 
 
 //------------------------------------------------------------------------------
@@ -115,16 +115,16 @@ extern "C" {
 //------------------------------------------------------------------------------
 #define         SGTL5000_I2C_NUM                1                   // i2c module number
 #define         SGTL5000_I2C_FREQ_HZ            100000              // master clock frequency (Hz)
-#define         SGTL5000_SAMPLERATE             48000               // audio sample rate
+#define         SGTL5000_SAMPLERATE             32000               // audio sample rate
 #define         SGTL5000_BITSPERSAMPLE          16                  // audio bit depth
 #define         WRITE_BIT                       I2C_MASTER_WRITE    // i2c master write
 #define         READ_BIT                        I2C_MASTER_READ     // i2c master read
 #define         ACK_CHECK_EN                    0x1                 // i2c master will check ack from slave
 #define         ACK_CHECK_DIS                   0x0                 // i2c master will not check ack from slave
-#define         ACK_VAL                         0x0                 // i2c ack value
-#define         NACK_VAL                        0x1                 // i2c nack value
-#define         DMA_BUFFER_LENGTH               512                 // bytes in each dma buffer
-#define         DMA_BUFFER_COUNT                6                   // number of dma buffers
+#define         ACK_VAL                         0x1                 // i2c ack value
+#define         NACK_VAL                        0x0                 // i2c nack value
+#define         DMA_BUFFER_LENGTH               1024                 // bytes in each dma buffer
+#define         DMA_BUFFER_COUNT                4                  // number of dma buffers
 #define         I2C_MASTER_TX_BUF_DISABLE       0                   // i2c master do not need buffer
 #define         I2C_MASTER_RX_BUF_DISABLE       0                   // i2c master do not need buffer
 #define         I2S_NUM                         (0)                 // NOTE: Do not change i2s
@@ -154,7 +154,7 @@ esp_err_t       sgtl5000_mute_headphone         ( void );
 esp_err_t       sgtl5000_check_module           ( void );
 
 void            sgtl5000_i2c_init               ( void );
-void            sgtl5000_i2s_init               ( void );
+int            sgtl5000_i2s_init               ( void );
 esp_err_t       sgtl5000_audio_init             ( void );
 
 
