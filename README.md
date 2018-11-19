@@ -10,3 +10,13 @@ I'm using the [ESP-WROVER-KIT](https://docs.espressif.com/projects/esp-idf/en/la
 ![hookup image](https://sinneb.github.io/img/wrover_sgtl5000.jpg)
 
 Most pins are defined in the sgtl5000 header file. 
+
+| teensy    | wrover-kit |
+|-----------|------------|
+| i2c-sda   | 5          |
+| i2c-scl   | 19         |
+| i2s-rx    | 13         |
+| i2s-tx    | 2          |
+| i2s-LRCLK | 25         |
+| i2s-BCLK  | 26         |
+| i2s-MCLK  | 0 (fixed)  |
