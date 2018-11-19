@@ -7,6 +7,6 @@ I'm using the [ESP-WROVER-KIT](https://docs.espressif.com/projects/esp-idf/en/la
 
 # Hookup guide
 
-!(https://sinneb.github.io/img/wrover_sgtl5000.jpg)
+![hookup image](https://sinneb.github.io/img/wrover_sgtl5000.jpg)
 
 Most pins are defined in the sgtl5000 header file. 
