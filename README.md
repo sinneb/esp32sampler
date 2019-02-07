@@ -1,6 +1,6 @@
 # esp32sampler
 
-Demonstration of a first working version of a sampler application for the ESP32 WROVER board. This version will sample 30 seconds of single channel (left / right) audio with a samplerate of 32000. Than, the demo will automatically switch to looped playback of the sampled content. 
+Demonstration of a first working version of a sampler application for the ESP32 WROVER board. This version will sample 30 seconds of single channel (left / right) audio with a samplerate of 32000. Then, the demo will automatically switch to looped playback of the sampled content. 
 
 I'm using the [ESP-WROVER-KIT](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/get-started-wrover-kit.html) from espressif and the [Teensy audio board](https://www.pjrc.com/store/teensy3_audio.html) with the SGTL5000 codec.
 
